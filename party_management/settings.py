@@ -45,8 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
-
+    'cloudinary',
     # Third-party Apps
     'cloudinary_storage',
     'cloudinary',
@@ -137,7 +138,14 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+MEDIA_URL = '/eudp-media/' 
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # ==============================================================================
 # STATIC & MEDIA FILES
 # ==============================================================================
@@ -147,12 +155,3 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-MEDIA_URL = '/media/'  # <-- ይህንን መስመር ጨምር
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': env('CLOUDINARY_API_KEY'),
-    'API_SECRET': env('CLOUDINARY_API_SECRET'),
-}
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
