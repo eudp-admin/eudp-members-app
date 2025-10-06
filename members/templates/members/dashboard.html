@@ -1,0 +1,200 @@
+{% extends 'members/base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* ከቤዝ ቴምፕሌት ላይ ያሉትን ቀለሞች መጠቀም */
+    :root {
+        --party-dark-bg: #2c3e50; /* ለርዕስ እና ራስጌ */
+        --party-primary-color: #1e8449; /* አረንጓዴ (ለስታትስቲክስ ካርድና ግራፍ) */
+        --party-secondary-color: #176638;
+        --party-light-text: #ecf0f1;
+        --party-background: #f7f9fc; /* ለሆቨር እና ካርድ አካል */
+    }
+    .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); overflow: hidden; }
+    .stat-card-total { background-color: var(--party-dark-bg) !important; color: white !important; }
+    .stat-card-male { background-color: var(--party-primary-color) !important; color: white !important; }
+    .stat-card-female { background-color: #5d9cec !important; color: white !important; }
+    .card-header-styled { background-color: var(--party-dark-bg); color: white; font-weight: 600; padding: 12px 20px; border-bottom: none; }
+    .table-custom th { background-color: var(--party-dark-bg) !important; color: white; border-color: #243445; font-weight: 600; }
+    .table-custom tr:hover { background-color: var(--party-background); }
+    .list-group-item { border-color: #e9ecef; padding: 12px 15px; font-weight: 500; }
+    .list-group-item a { color: var(--party-dark-bg); text-decoration: none; }
+    .list-group-item a:hover { color: var(--party-primary-color); text-decoration: underline; }
+</style>
+
+    <!-- የ Chart.js ዳታ ከቪው ወደ ጃቫስክሪፕት ለማስተላለፍ -->
+    {{ bar_chart_labels|json_script:"bar-chart-labels" }}
+    {{ bar_chart_data|json_script:"bar-chart-data" }}
+    {{ pie_chart_labels|json_script:"pie-chart-labels" }}
+    {{ pie_chart_data|json_script:"pie-chart-data" }}
+
+    <h1 class="mb-4" style="color: var(--party-dark-bg); font-weight: 700;">{{ page_title }}</h1>
+
+    <!-- ስታቲስቲክስ ካርዶች -->
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card stat-card-total h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-users me-2"></i> አጠቃላይ የአባላት ብዛት</h5>
+                    <p class="card-text fs-2 fw-bold">{{ total_members }}</p>
+                </div>
+            </div>
+        </div>
+{% for gender_stat in gender_distribution %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card {% if gender_stat.gender == 'M' %}stat-card-male{% else %}stat-card-female{% endif %} h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas {% if gender_stat.gender == 'M' %}fa-male{% else %}fa-female{% endif %} me-2"></i>
+                    {{ gender_stat.gender_display }} አባላት
+                </h5>
+                <p class="card-text fs-2 fw-bold">{{ gender_stat.count }}</p>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+    </div>
+
+    <!-- ግራፎች -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header card-header-styled">
+                    <i class="fas fa-chart-bar me-2"></i> የአባላት ምዝገባ በዓመት
+                </div>
+                <div class="card-body">
+                    <canvas id="membersByYearChart"></canvas> 
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header card-header-styled">
+                    <i class="fas fa-chart-pie me-2"></i> የአባላት ስርጭት በጾታ
+                </div>
+                <div class="card-body">
+                    <canvas id="membersByGenderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ዝርዝሮች -->
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <h4 style="color: var(--party-dark-bg);"><i class="fas fa-map-marked-alt me-2"></i> አባላት በየክልሉ</h4>
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-custom mb-0">
+                            <thead class="table-dark table-custom">
+                                <tr>
+                                    <th>ክልል</th>
+                                    <th class="text-end">የአባላት ብዛት</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for region_stat in members_by_region %}
+                                <tr>
+                                    <td>{{ region_stat.region_display }}</td>
+                                    <td class="text-end">{{ region_stat.count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center py-4 text-muted">ምንም መረጃ አልተገኘም።</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <h4 style="color: var(--party-dark-bg);"><i class="fas fa-user-clock me-2"></i> በቅርብ ጊዜ የተመዘገቡ አባላት</h4>
+            <div class="card">
+                 <div class="card-header card-header-styled">
+                    <i class="fas fa-user-plus me-2"></i> አዲስ አባላት
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for member in recent_members %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'member_detail' member.pk %}">{{ member.full_name }}</a>
+                                <span class="badge bg-success rounded-pill">
+                                    {{ member.date_joined|timesince }} በፊት
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center py-4 text-muted">ምንም አዲስ አባል የለም።</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // የፓርቲውን ቀለሞች ከ CSS Variables መውሰድ
+            const partyPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--party-primary-color').trim();
+            const partySecondaryColor = '#5d9cec'; // ለሴት
+
+            // 1. Pie Chart: የአባላት ስርጭት በጾታ
+            const pieLabelsElement = document.getElementById('pie-chart-labels');
+            const pieDataElement = document.getElementById('pie-chart-data');
+            if (pieLabelsElement && pieDataElement) {
+                const pie_chart_labels = JSON.parse(pieLabelsElement.textContent);
+                const pie_chart_data = JSON.parse(pieDataElement.textContent);
+                
+                const ctxPie = document.getElementById('membersByGenderChart');
+                new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: pie_chart_labels,
+                        datasets: [{
+                            data: pie_chart_data,
+                            backgroundColor: [partyPrimaryColor, partySecondaryColor, '#e74c3c', '#f1c40f'],
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // 2. Bar Chart: የአባላት ምዝገባ በዓመት
+            const barLabelsElement = document.getElementById('bar-chart-labels');
+            const barDataElement = document.getElementById('bar-chart-data');
+            if (barLabelsElement && barDataElement) {
+                const bar_chart_labels = JSON.parse(barLabelsElement.textContent);
+                const bar_chart_data = JSON.parse(barDataElement.textContent);
+                
+                const ctxBar = document.getElementById('membersByYearChart');
+                new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: bar_chart_labels,
+                        datasets: [{
+                            label: 'የተመዘገቡ አባላት',
+                            data: bar_chart_data,
+                            backgroundColor: partyPrimaryColor,
+                            borderColor: partyPrimaryColor,
+                            borderWidth: 1,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
