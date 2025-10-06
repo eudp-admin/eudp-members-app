@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage', # <-- ጨምር
+    'cloudinary', 
 
     # የእኛ መተግበሪያዎች (Our Apps)
     'members.apps.MembersConfig', # ወይም በቀላሉ 'members'
@@ -165,3 +167,12 @@ LOGIN_URL = 'login'
 
 # ሎግአውት ካደረጉ በኋላ የሚሄዱበት ገጽ
 LOGOUT_REDIRECT_URL = 'landing_page'
+# Cloudinary Configuration for Media Files
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
+}
+
+# Set the default file storage to Cloudinary
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
