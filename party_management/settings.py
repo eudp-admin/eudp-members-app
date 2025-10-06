@@ -49,8 +49,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary',
     # Third-party Apps
-    'cloudinary_storage',
-    'cloudinary',
     'crispy_forms',
     'crispy_bootstrap5',
     
