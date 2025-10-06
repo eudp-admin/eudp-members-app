@@ -89,18 +89,35 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
-# --- Static Files ---
+# --- Static Files (served by WhiteNoise) ---
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- Media Files (Cloudinary) ---
-MEDIA_URL = '/media/'  # This can stay
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': env('CLOUDINARY_API_KEY'),
-    'API_SECRET': env('CLOUDINARY_API_SECRET'),
-}
+# --- Media Files (Conditional: Cloudinary for Production, Local for Development) ---
+MEDIA_URL = '/media/'
+
+# Define a local media root regardless of the environment.
+# This is crucial for DEBUG=True on Render to work.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Get Cloudinary credentials from environment variables
+CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default=None)
+
+# Check ONLY if Cloudinary cloud name is provided
+if CLOUDINARY_CLOUD_NAME:
+    # PRODUCTION SETTINGS (using Cloudinary)
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': env('CLOUDINARY_API_KEY'),
+        'API_SECRET': env('CLOUDINARY_API_SECRET'),
+    }
+    print("INFO: Cloudinary credentials found. Using Cloudinary for media file storage.")
+else:
+    # DEVELOPMENT SETTINGS (using local file system)
+    # The default storage is already FileSystemStorage, so no need to set it.
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    print("INFO: Cloudinary credentials not found. Using local file storage for media.")

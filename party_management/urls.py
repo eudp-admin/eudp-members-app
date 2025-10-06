@@ -14,23 +14,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# party_management/urls.py
-
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from members import views as member_views # <- ይህንን import አድርግ
+from django.contrib import admin
+from django.urls import path, include
+from members import views as member_views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # የፕሮጀክቱ ዋና ገጽ (http://127.0.0.1:8000/)
     path('', member_views.landing_page, name='landing_page'),
-
-    # የ 'members' መተግበሪያ ዩአርኤሎች
     path('members/', include('members.urls')),
-    
-    # የ Django ውስጠ-ግቡ የማረጋገጫ ዩአርኤሎች
-    # ይህ 'login/', 'logout/', 'password_change/', 'password_reset/'... የመሳሰሉትን ይጨምራል
-    # path('accounts/', include('django.contrib.auth.urls')),
 ]
+
+# This will now work correctly on Render when DEBUG=True
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
