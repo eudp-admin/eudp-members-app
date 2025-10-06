@@ -23,7 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'storages',
+    'cloudinary',
+    'cloudinary_storage',
     'crispy_forms',
     'crispy_bootstrap5',
     'members.apps.MembersConfig',
@@ -61,10 +62,9 @@ TEMPLATES = [
 
 DATABASES = {
     'default': dj_database_url.config(
-        # DATABASE_URL'ን ከ .env ወይም ከ Render Environment Variables ያነባል
-        default=env('DATABASE_URL'),
+        default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}',
         conn_max_age=600,
-        ssl_require=True # Supabase always requires SSL
+        ssl_require=not DEBUG
     )
 }
 
@@ -89,35 +89,18 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
-# --- Static Files (served by WhiteNoise) ---
+# --- Static Files ---
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# --- Media Files (Cloudinary) ---
+MEDIA_URL = '/media/'  # This can stay
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# --- Media Files (Conditional: Cloudinary for Production, Local for Development) ---
-MEDIA_URL = '/media/'
-
-# Define a local media root regardless of the environment.
-# This is crucial for DEBUG=True on Render to work.
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Get Cloudinary credentials from environment variables
-CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default=None)
-
-# Check ONLY if Cloudinary cloud name is provided
-if CLOUDINARY_CLOUD_NAME:
-    # PRODUCTION SETTINGS (using Cloudinary)
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': env('CLOUDINARY_API_KEY'),
-        'API_SECRET': env('CLOUDINARY_API_SECRET'),
-    }
-    print("INFO: Cloudinary credentials found. Using Cloudinary for media file storage.")
-else:
-    # DEVELOPMENT SETTINGS (using local file system)
-    # The default storage is already FileSystemStorage, so no need to set it.
-    os.makedirs(MEDIA_ROOT, exist_ok=True)
-    print("INFO: Cloudinary credentials not found. Using local file storage for media.")
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
+}
