@@ -45,10 +45,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
-    'cloudinary',
+
     # Third-party Apps
+    'cloudinary_storage',
+    'cloudinary',
     'crispy_forms',
     'crispy_bootstrap5',
     
@@ -135,6 +136,8 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+
 # ==============================================================================
 # STATIC & MEDIA FILES
 # ==============================================================================
@@ -145,28 +148,10 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
-# --- Media Files (Conditional: Cloudinary for Production, Local for Development) ---
-MEDIA_URL = '/media/'
-
-# Get Cloudinary credentials from environment variables
-CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default=None)
-CLOUDINARY_API_KEY = env('CLOUDINARY_API_KEY', default=None)
-CLOUDINARY_API_SECRET = env('CLOUDINARY_API_SECRET', default=None)
-
-# Check if all Cloudinary credentials are provided
-if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
-    # PRODUCTION SETTINGS (using Cloudinary)
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
-        'API_KEY': CLOUDINARY_API_KEY,
-        'API_SECRET': CLOUDINARY_API_SECRET,
-    }
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    print("INFO: Using Cloudinary for media file storage.")
-else:
-    # DEVELOPMENT SETTINGS (using local file system)
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    os.makedirs(MEDIA_ROOT, exist_ok=True)
-    print("INFO: Cloudinary credentials not found. Using local file storage for media.")
+# --- Media Files (served by Cloudinary) ---
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
