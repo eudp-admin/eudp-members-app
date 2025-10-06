@@ -135,10 +135,9 @@ USE_TZ = True
 # =========================================================================
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
-# FIX 2: Static files will be collected here for WhiteNoise to serve.
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # FIX 3: Configure WhiteNoise to serve and compress static files.
 # Correction: This must be uncommented for WhiteNoise to work in production
