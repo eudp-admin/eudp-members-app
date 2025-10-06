@@ -1,27 +1,13 @@
-"""
-Django settings for party_management project.
-"""
-
 import os
 from pathlib import Path
 import dj_database_url
 from environ import Env
 
-# ==============================================================================
-# CORE SETTINGS
-# ==============================================================================
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Initialize django-environ to read .env file
 env = Env()
 Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
@@ -29,42 +15,20 @@ RENDER_EXTERNAL_HOSTNAME = env('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-ROOT_URLCONF = 'party_management.urls'
-WSGI_APPLICATION = 'party_management.wsgi.application'
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# ==============================================================================
-# INSTALLED APPS
-# ==============================================================================
-
 INSTALLED_APPS = [
-    # Django Core Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-
-    # Third-party Apps
-    'cloudinary_storage',
     'cloudinary',
+    'cloudinary_storage',
     'crispy_forms',
     'crispy_bootstrap5',
-    
-    # Local Apps
     'members.apps.MembersConfig',
 ]
-
-# Crispy Forms Settings
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
-
-
-# ==============================================================================
-# MIDDLEWARE
-# ==============================================================================
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,10 +41,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
-# ==============================================================================
-# TEMPLATES
-# ==============================================================================
+ROOT_URLCONF = 'party_management.urls'
+WSGI_APPLICATION = 'party_management.wsgi.application'
 
 TEMPLATES = [
     {
@@ -98,24 +60,15 @@ TEMPLATES = [
     },
 ]
 
-
-# ==============================================================================
-# DATABASE
-# ==============================================================================
-
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL'),
+        default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}',
         conn_max_age=600,
-        ssl_require=env.bool('DB_SSL_REQUIRE', default=True) # Recommended for Render
+        ssl_require=not DEBUG
     )
 }
 
-
-# ==============================================================================
-# PASSWORD VALIDATION & AUTHENTICATION
-# ==============================================================================
-
+# ... (AUTH_PASSWORD_VALIDATORS, I18N, etc. እንዳሉ ሆነው) ...
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -127,31 +80,27 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'landing_page'
 
-
-# ==============================================================================
-# INTERNATIONALIZATION (I18N)
-# ==============================================================================
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
-# ==============================================================================
-# STATIC & MEDIA FILES
-# ==============================================================================
-
-# --- Static Files (served by WhiteNoise) ---
+# --- Static Files ---
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- Media Files (served by Cloudinary) ---
+# --- Media Files (Cloudinary) ---
+MEDIA_URL = '/media/'  # This can stay
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': env('CLOUDINARY_API_KEY'),
     'API_SECRET': env('CLOUDINARY_API_SECRET'),
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
