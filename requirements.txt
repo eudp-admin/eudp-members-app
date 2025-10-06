@@ -4,14 +4,17 @@ attrs==25.4.0
 certifi==2025.10.5
 chardet==4.0.0
 charset-normalizer==3.4.3
+cloudinary==1.44.1
 crispy-bootstrap5==2025.6
 dataclasses==0.6
 deprecation==2.1.0
 dj-database-url==3.0.1
 Django==5.2.7
+django-cloudinary-storage==0.3.0
 django-crispy-forms==2.4
 django-environ==0.12.0
-django-storage-supabase==0.1.0  # <-- ወሳኝ
+django-storage-supabase==0.1.0
+django-storages==1.14.6
 gotrue==0.2.0
 gunicorn==23.0.0
 h11==0.12.0
@@ -34,7 +37,7 @@ rfc3986==1.5.0
 six==1.17.0
 sniffio==1.3.1
 sqlparse==0.5.3
-supabase==0.0.3                # <-- ወሳኝ
+supabase==0.0.3
 toml==0.10.2
 urllib3==1.26.20
 websockets==9.1
