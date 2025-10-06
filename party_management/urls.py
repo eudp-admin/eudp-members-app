@@ -21,7 +21,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from members import views as member_views # <- ይህንን import አድርግ
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     
