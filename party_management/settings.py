@@ -7,19 +7,25 @@ from environ import Env
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = Env()
 
-# WARNING: .env ን በ Production (Render) ላይ ማንበብ አያስፈልግም።
-# Render የ Env Vars ን በቀጥታ ስለሚያስገባ፣ ይህ መስመር በ Production ላይ ይወገዳል።
-# ይህንን በአካባቢዎ (local) ላይ ብቻ ይጠቀሙ፡
-# Env.read_env(os.path.join(BASE_DIR, '.env')) 
-
+# >>>>>> ወሳኙ ማስተካከያ እዚህ ላይ ነው! <<<<<<
+# .env ፋይል በአካባቢው (Local) ላይ ካለ ብቻ እንዲነበብ ማድረግ።
+# ይህ Render ላይ ስህተት እንዳይፈጥር ይከላከላል።
+if os.path.exists(os.path.join(BASE_DIR.parent, '.env')):
+    # የ .env ፋይልዎ ከ party_management/settings.py አንድ ደረጃ በላይ ከሆነ:
+    Env.read_env(os.path.join(BASE_DIR.parent, '.env')) 
+elif os.path.exists(os.path.join(BASE_DIR, '.env')):
+    # የ .env ፋይልዎ ከ party_management ፎልደር ጋር ከሆነ:
+    Env.read_env(os.path.join(BASE_DIR, '.env')) 
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # በ Render ላይ DEBUG=False እና SECRET_KEY ከ Env Var ይመጣሉ
+# env() ሲጠራ SECRET_KEY የሚገኘው አሁን ከ .env (Local) ወይም ከ Render Env Vars (Production) ነው።
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False) 
 
 # --- Host Configuration ---
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME') # os.environ.get() መጠቀም 
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME') 
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
@@ -43,7 +49,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # WhiteNoise ከ SecurityMiddleware በታች መሆን አለበት
     'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,12 +78,10 @@ TEMPLATES = [
 ]
 
 # --- Database Configuration ---
-# Render ላይ DJANGO_DATABASE_URL ይኖራል
 DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}',
         conn_max_age=600,
-        # SSL Require በ Production ላይ (DEBUG=False) ላይ ብቻ መሆን አለበት
         ssl_require=not DEBUG 
     )
 }
@@ -112,16 +115,12 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # --- Media Files (Cloudinary) ---
 MEDIA_URL = '/media/'
-# ይህ በትክክል ተዋቅሯል
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage' 
 
-# እዚህ ላይ os.environ.get() መጠቀም ግዴታ ነው!
-# ይህ Django Cloudinary Credentials ን ከ Render Env Vars እንዲያገኝ ያስችለዋል።
+# ይህ ክፍል ለ Render ትክክል ነው
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
-
-# አማራጭ፡ Cloudinary URL-ን እንደ አንድ ተለዋዋጭ ማዋቀር (ለቀላልነት)
-# CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL') # Cloudinary URL ን የሚጠቀሙ ከሆነ
+# CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL') # አማራጭ
