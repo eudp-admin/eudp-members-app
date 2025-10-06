@@ -53,7 +53,7 @@ class Member(models.Model):
     full_name = models.CharField(max_length=255, verbose_name="ሙሉ ስም")
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, verbose_name="ጾታ")
     date_of_birth = models.DateField(verbose_name="የትውልድ ቀን")
-    photo = models.ImageField(upload_to='member_photos/', default='default.png', verbose_name="ፎቶግራፍ")
+    photo = models.ImageField(upload_to='member_photos/', null=True, blank=True, verbose_name="ፎቶግራፍ")
     phone_number = models.CharField(max_length=15, unique=True, verbose_name="ስልክ ቁጥር")
     email = models.EmailField(max_length=255, blank=True, null=True, verbose_name="ኢሜይል")
     
