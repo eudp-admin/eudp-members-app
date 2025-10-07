@@ -25,15 +25,16 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
+    'cloudinary',
+    'cloudinary_storage', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
-    'cloudinary_storage',  # Move this BEFORE staticfiles
     'django.contrib.staticfiles',
-    'cloudinary',
+    
     'crispy_forms',
     'crispy_bootstrap5',
     'members.apps.MembersConfig',
@@ -118,10 +119,5 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
-
 # እንዲሁም CLOUDINARY_URL ን በቀጥታ ማስገባት ለ Cloudinary Library ጥሩ ነው (ሁለቱንም ይፈልግ)
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
-# 🛑 የመጨረሻው ወሳኝ የምርመራ ኮድ (ለጊዜው) 🛑
-if not DEBUG and not os.environ.get('CLOUDINARY_API_KEY'):
-    # ይህ መስመር Render ላይ Build ሲደረግ API ቁልፉ ካልተገኘ ወዲያውኑ Deployment እንዲሰበር ያደርጋል።
-    raise Exception("RENDER_SECRET_READ_ERROR: Cloudinary API Key is missing during Build Time!")
