@@ -7,19 +7,14 @@ from environ import Env
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = Env()
 
-# >>>>>> ወሳኙ ማስተካከያ እዚህ ላይ ነው! <<<<<<
 # .env ፋይል በአካባቢው (Local) ላይ ካለ ብቻ እንዲነበብ ማድረግ።
 # ይህ Render ላይ ስህተት እንዳይፈጥር ይከላከላል።
 if os.path.exists(os.path.join(BASE_DIR.parent, '.env')):
-    # የ .env ፋይልዎ ከ party_management/settings.py አንድ ደረጃ በላይ ከሆነ:
     Env.read_env(os.path.join(BASE_DIR.parent, '.env')) 
 elif os.path.exists(os.path.join(BASE_DIR, '.env')):
-    # የ .env ፋይልዎ ከ party_management ፎልደር ጋር ከሆነ:
     Env.read_env(os.path.join(BASE_DIR, '.env')) 
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# በ Render ላይ DEBUG=False እና SECRET_KEY ከ Env Var ይመጣሉ
-# env() ሲጠራ SECRET_KEY የሚገኘው አሁን ከ .env (Local) ወይም ከ Render Env Vars (Production) ነው።
+
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False) 
 
@@ -38,7 +33,6 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     
-    # Cloudinary ን መጀመሪያ ላይ ማስቀመጥ ይመርጣል
     'cloudinary',
     'cloudinary_storage', 
     
@@ -86,7 +80,8 @@ DATABASES = {
     )
 }
 
-# ... (የይለፍ ቃል ማረጋገጫዎች) ...
+# ... (AUTH_PASSWORD_VALIDATORS, LOGIN_URL, LANGUAGE_CODE, ወዘተ...)
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -117,10 +112,14 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage' 
 
-# ይህ ክፍል ለ Render ትክክል ነው
+# ይህንን ውቅር ማስቀመጥ እና የ CLOUDINARY_URL ን ማንበብ በጣም አስተማማኝው መንገድ ነው!
+# Cloudinary ፓኬጁ የ CLOUDINARY_URL ተለዋዋጭን በ os.environ ውስጥ ካገኘ፣
+# እነዚህን ሦስት ቁልፎች ችላ ብሎ ወደ URLው ይሄዳል።
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
-# CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL') # አማራጭ
+
+# እንዲሁም CLOUDINARY_URL ን በቀጥታ ማስገባት ለ Cloudinary Library ጥሩ ነው (ሁለቱንም ይፈልግ)
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
