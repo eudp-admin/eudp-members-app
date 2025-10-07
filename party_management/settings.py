@@ -123,3 +123,7 @@ CLOUDINARY_STORAGE = {
 
 # እንዲሁም CLOUDINARY_URL ን በቀጥታ ማስገባት ለ Cloudinary Library ጥሩ ነው (ሁለቱንም ይፈልግ)
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+# 🛑 የመጨረሻው ወሳኝ የምርመራ ኮድ (ለጊዜው) 🛑
+if not DEBUG and not os.environ.get('CLOUDINARY_API_KEY'):
+    # ይህ መስመር Render ላይ Build ሲደረግ API ቁልፉ ካልተገኘ ወዲያውኑ Deployment እንዲሰበር ያደርጋል።
+    raise Exception("RENDER_SECRET_READ_ERROR: Cloudinary API Key is missing during Build Time!")
