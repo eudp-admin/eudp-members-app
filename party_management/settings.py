@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
-    'cloudinary_storage',  # Move this BEFORE staticfiles
+    'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
     'crispy_forms',
@@ -78,8 +78,6 @@ DATABASES = {
     )
 }
 
-# ... (AUTH_PASSWORD_VALIDATORS, LOGIN_URL, LANGUAGE_CODE, ወዘተ...)
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -99,7 +97,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-
 # --- Static Files (WhiteNoise) ---
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
@@ -110,18 +107,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage' 
 
-# ይህንን ውቅር ማስቀመጥ እና የ CLOUDINARY_URL ን ማንበብ በጣም አስተማማኝው መንገድ ነው!
-# Cloudinary ፓኬጁ የ CLOUDINARY_URL ተለዋዋጭን በ os.environ ውስጥ ካገኘ፣
-# እነዚህን ሦስት ቁልፎች ችላ ብሎ ወደ URLው ይሄዳል።
+# 🔧 FIXED: Use env() instead of os.environ.get()
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
 }
 
-# እንዲሁም CLOUDINARY_URL ን በቀጥታ ማስገባት ለ Cloudinary Library ጥሩ ነው (ሁለቱንም ይፈልግ)
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
-# 🛑 የመጨረሻው ወሳኝ የምርመራ ኮድ (ለጊዜው) 🛑
-if not DEBUG and not os.environ.get('CLOUDINARY_API_KEY'):
-    # ይህ መስመር Render ላይ Build ሲደረግ API ቁልፉ ካልተገኘ ወዲያውኑ Deployment እንዲሰበር ያደርጋል።
-    raise Exception("RENDER_SECRET_READ_ERROR: Cloudinary API Key is missing during Build Time!")
+# Debug output - remove after confirming it works
+print("=" * 50)
+print(f"DEFAULT_FILE_STORAGE: {DEFAULT_FILE_STORAGE}")
+print(f"CLOUDINARY_STORAGE config: {CLOUDINARY_STORAGE}")
+print(f"MEDIA_URL: {MEDIA_URL}")
+print("=" * 50)
