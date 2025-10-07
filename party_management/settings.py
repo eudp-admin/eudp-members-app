@@ -31,11 +31,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
+    'cloudinary_storage',  # Move this BEFORE staticfiles
     'django.contrib.staticfiles',
-    
     'cloudinary',
-    'cloudinary_storage', 
-    
     'crispy_forms',
     'crispy_bootstrap5',
     'members.apps.MembersConfig',
@@ -112,13 +110,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage' 
 
-# 🔑 ወሳኝ ጊዜያዊ ማስተካከያ: ቁልፎችን በቀጥታ በኮድ ማስገባት (ለሙከራ ብቻ!)
-# ይህንን ካረጋገጡ በኋላ ወዲያውኑ ወደ env() መመለስ አለብዎት!
+# ይህንን ውቅር ማስቀመጥ እና የ CLOUDINARY_URL ን ማንበብ በጣም አስተማማኝው መንገድ ነው!
+# Cloudinary ፓኬጁ የ CLOUDINARY_URL ተለዋዋጭን በ os.environ ውስጥ ካገኘ፣
+# እነዚህን ሦስት ቁልፎች ችላ ብሎ ወደ URLው ይሄዳል።
 CLOUDINARY_STORAGE = {
-    # እባክዎ "YOUR_REAL_CLOUD_NAME" በሚለው ቦታ ትክክለኛውን Cloud Name ያስገቡ
-    'CLOUD_NAME': 'dfxa9kcwo',          
-    # እባክዎ "YOUR_REAL_API_KEY" በሚለው ቦታ ትክክለኛውን API Key ያስገቡ
-    'API_KEY': '423646351335998',             
-    # እባክዎ "YOUR_REAL_API_SECRET" በሚለው ቦታ ትክክለኛውን API Secret ያስገቡ
-    'API_SECRET': 'OcevBOwyVXCC9U878V176LVLysc',       
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
+
+# እንዲሁም CLOUDINARY_URL ን በቀጥታ ማስገባት ለ Cloudinary Library ጥሩ ነው (ሁለቱንም ይፈልግ)
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+# 🛑 የመጨረሻው ወሳኝ የምርመራ ኮድ (ለጊዜው) 🛑
+if not DEBUG and not os.environ.get('CLOUDINARY_API_KEY'):
+    # ይህ መስመር Render ላይ Build ሲደረግ API ቁልፉ ካልተገኘ ወዲያውኑ Deployment እንዲሰበር ያደርጋል።
+    raise Exception("RENDER_SECRET_READ_ERROR: Cloudinary API Key is missing during Build Time!")
