@@ -32,12 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    
-    'cloudinary',
-    'cloudinary_storage', 
-    
     'crispy_forms',
     'crispy_bootstrap5',
+    'storages',
     'members.apps.MembersConfig',
 ]
 
@@ -74,9 +71,9 @@ TEMPLATES = [
 # --- Database Configuration ---
 DATABASES = {
     'default': dj_database_url.config(
-        default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}',
+        default=env('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=not DEBUG 
+        ssl_require=True 
     )
 }
 
@@ -104,21 +101,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # --- Static Files (WhiteNoise) ---
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- Media Files (Cloudinary) ---
-MEDIA_URL = '/media/'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage' 
-
-# ይህንን ውቅር ማስቀመጥ እና የ CLOUDINARY_URL ን ማንበብ በጣም አስተማማኝው መንገድ ነው!
-# Cloudinary ፓኬጁ የ CLOUDINARY_URL ተለዋዋጭን በ os.environ ውስጥ ካገኘ፣
-# እነዚህን ሦስት ቁልፎች ችላ ብሎ ወደ URLው ይሄዳል።
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
-}
-# እንዲሁም CLOUDINARY_URL ን በቀጥታ ማስገባት ለ Cloudinary Library ጥሩ ነው (ሁለቱንም ይፈልግ)
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+# --- Media Files (Served by Supabase Storage) ---
+DEFAULT_FILE_STORAGE = "django_storage_supabase.storage.SupabaseStorage"
+SUPABASE_URL = env('SUPABASE_URL')
+SUPABASE_KEY = env('SUPABASE_KEY')
+SUPABASE_BUCKET = "member-photos"

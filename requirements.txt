@@ -4,13 +4,13 @@ attrs==25.4.0
 certifi==2025.10.5
 chardet==4.0.0
 charset-normalizer==3.4.3
-cloudinary==1.44.1
+django-storage-supabase==0.1.0
+supabase==0.0.3
 crispy-bootstrap5==2025.6
 dataclasses==0.6
 deprecation==2.1.0
 dj-database-url==3.0.1
 Django==5.2.7
-django-cloudinary-storage==0.3.0
 django-crispy-forms==2.4
 django-environ==0.12.0
 gotrue==0.2.0
