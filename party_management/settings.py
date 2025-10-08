@@ -25,17 +25,27 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
+    # Custom Apps
+    'members',
+    
+    # Third-party Apps
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'whitenoise.runserver_nostatic', # Recommended for static file serving in development
+
+    # --- Cloudinary & Storage Integration ---
+    'cloudinary',
+    'cloudinary_storage',
+
+    # Django Built-in Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'storages',
-    'members.apps.MembersConfig',
+    'django.contrib.sites', 
+    'qrcode',
 ]
 
 MIDDLEWARE = [
@@ -67,29 +77,16 @@ TEMPLATES = [
         },
     },
 ]
-# DATABASE
-# This configuration allows us to force IPv4 if needed
-if 'RENDER' in os.environ:
-    # Production on Render (using individual env vars)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env('DB_NAME'),
-            'USER': env('DB_USER'),
-            'PASSWORD': env('DB_PASSWORD'),
-            'HOST': env('DB_HOST'),
-            'PORT': env.int('DB_PORT'),
-            'OPTIONS': {'sslmode': 'require'},
-        }
-    }
-else:
-    # Local development (using DATABASE_URL or SQLite)
-    DATABASES = {
-        'default': dj_database_url.config(
-            default='sqlite:///db.sqlite3',
-            conn_max_age=600
-        )
-    }
+
+# --- Database Configuration ---
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}',
+        conn_max_age=600,
+        ssl_require=not DEBUG 
+    )
+}
+
 # ... (AUTH_PASSWORD_VALIDATORS, LOGIN_URL, LANGUAGE_CODE, ወዘተ...)
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -112,13 +109,39 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
-# --- Static Files (WhiteNoise) ---
+# party_management/settings.py
+
+# ==============================================================================
+# STATIC & MEDIA FILES
+# ==============================================================================
+
+# --- Static Files (served by WhiteNoise) ---
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- Media Files (Served by Supabase Storage) ---
-DEFAULT_FILE_STORAGE = "django_storage_supabase.storage.SupabaseStorage"
-SUPABASE_URL = env('SUPABASE_URL')
-SUPABASE_KEY = env('SUPABASE_KEY')
-SUPABASE_BUCKET = "member-photos"
+
+# --- Media Files (Conditional: Cloudinary for Production, Local for Development) ---
+MEDIA_URL = '/media/'
+
+# Get Cloudinary credentials from environment variables using django-environ
+CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default=None)
+CLOUDINARY_API_KEY = env('CLOUDINARY_API_KEY', default=None)
+CLOUDINARY_API_SECRET = env('CLOUDINARY_API_SECRET', default=None)
+
+# Check if all Cloudinary credentials are provided
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    # PRODUCTION SETTINGS (using Cloudinary)
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+        'API_KEY': CLOUDINARY_API_KEY,
+        'API_SECRET': CLOUDINARY_API_SECRET,
+    }
+    print("INFO: Cloudinary credentials found. Using Cloudinary for media.")
+else:
+    # DEVELOPMENT SETTINGS (using local file system)
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    print("INFO: Cloudinary credentials not found. Using local file storage for media.")
