@@ -25,27 +25,20 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
-    # Custom Apps
-    'members',
-    
-    # Third-party Apps
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'whitenoise.runserver_nostatic', # Recommended for static file serving in development
-
-    # --- Cloudinary & Storage Integration ---
-    'cloudinary',
-    'cloudinary_storage',
-
-    # Django Built-in Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'django.contrib.sites', 
-    'qrcode',
+    
+    'cloudinary',
+    'cloudinary_storage', 
+    
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'members.apps.MembersConfig',
 ]
 
 MIDDLEWARE = [
