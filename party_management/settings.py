@@ -67,15 +67,35 @@ TEMPLATES = [
         },
     },
 ]
+# DATABASE
+# This configuration allows us to force IPv4 if needed
+DB_HOST = env('DB_HOST', default='localhost')
+DB_NAME = env('DB_NAME', default='db.sqlite3')
+DB_USER = env('DB_USER', default=None)
+DB_PASSWORD = env('DB_PASSWORD', default=None)
+DB_PORT = env.int('DB_PORT', default=5432)
 
-# --- Database Configuration ---
 DATABASES = {
-    'default': dj_database_url.config(
-        default=env('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True 
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+    }
 }
+
+# Force SSL for Supabase/production
+if 'RENDER' in os.environ:
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+
+# If using local SQLite, override the settings
+if DATABASES['default']['HOST'] == 'localhost' and DATABASES['default']['USER'] is None:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 # ... (AUTH_PASSWORD_VALIDATORS, LOGIN_URL, LANGUAGE_CODE, ወዘተ...)
 
