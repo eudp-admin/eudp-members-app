@@ -69,34 +69,27 @@ TEMPLATES = [
 ]
 # DATABASE
 # This configuration allows us to force IPv4 if needed
-DB_HOST = env('DB_HOST', default='localhost')
-DB_NAME = env('DB_NAME', default='db.sqlite3')
-DB_USER = env('DB_USER', default=None)
-DB_PASSWORD = env('DB_PASSWORD', default=None)
-DB_PORT = env.int('DB_PORT', default=5432)
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
-    }
-}
-
-# Force SSL for Supabase/production
 if 'RENDER' in os.environ:
-    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
-
-# If using local SQLite, override the settings
-if DATABASES['default']['HOST'] == 'localhost' and DATABASES['default']['USER'] is None:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    # Production on Render (using individual env vars)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env.int('DB_PORT'),
+            'OPTIONS': {'sslmode': 'require'},
+        }
     }
-
+else:
+    # Local development (using DATABASE_URL or SQLite)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default='sqlite:///db.sqlite3',
+            conn_max_age=600
+        )
+    }
 # ... (AUTH_PASSWORD_VALIDATORS, LOGIN_URL, LANGUAGE_CODE, ወዘተ...)
 
 AUTH_PASSWORD_VALIDATORS = [
